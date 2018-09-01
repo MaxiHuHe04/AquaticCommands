@@ -15,17 +15,18 @@ trait Command {
   val rootNode: LiteralNode
 
   @throws[CommandException]
-  def execute(sender: CommandSender, arguments: Map[String, ParsedArgument]): Unit
+  def execute(sender: CommandSender, arguments: Map[String, ParsedArgument], literals: Seq[String]): Unit
 
   def onCommand(sender: CommandSender, args: Seq[String]): Boolean = {
     val parsedArguments = new mutable.HashMap[String, ParsedArgument]()
+    val literals = new ListBuffer[String]
     val lastArgumentPlaceholder: String = "\u0000"
 
     try {
-      val lastNodes = parseCommand(sender, args, rootNode.children, parsedArguments)
+      val lastNodes = parseCommand(sender, args, rootNode.children, parsedArguments, literals)
       if (!lastNodes.exists(_._2.executable)) throw new ParseException("Unknown command", lastArgumentPlaceholder)
 
-      this.execute(sender, parsedArguments.toMap)
+      this.execute(sender, parsedArguments.toMap, literals)
     } catch {
       case ex: ParseException =>
         val msg = new TextComponent(ex.getMessage)
@@ -60,7 +61,7 @@ trait Command {
   }
 
 
-  private def parseCommand(sender: CommandSender, arguments: Seq[String], currentNodes: Seq[CommandNode], parsed: mutable.HashMap[String, ParsedArgument]): Seq[(String, CommandNode)] = {
+  private def parseCommand(sender: CommandSender, arguments: Seq[String], currentNodes: Seq[CommandNode], parsed: mutable.HashMap[String, ParsedArgument], literals: ListBuffer[String]): Seq[(String, CommandNode)] = {
     val nodes = currentNodes
       .filter(node => arguments.slice(0, node.positions).nonEmpty)
       .filter(node => node.applicable(sender, arguments.slice(0, node.positions).mkString(" ")))
@@ -69,6 +70,11 @@ trait Command {
     for ((arg, node) <- nodes if node.isInstanceOf[ArgumentNode]) {
       val result = node.asInstanceOf[ArgumentNode].parser.parse(sender, arg)
       parsed(node.name) = ParsedArgument(result)
+    }
+
+    for ((arg, node) <- nodes if node.isInstanceOf[LiteralNode]) {
+      if (!node.name.equals(arg)) throw new ParseException("Incorrect argument for command", arg)
+      literals += node.name
     }
 
     val nextNodes = new ListBuffer[(String, CommandNode)]
@@ -80,7 +86,7 @@ trait Command {
     nextNodes.appendAll(nodes.filter({
       case (_, node) => arguments.length > node.positions
     }).flatMap({
-      case (_, node) => parseCommand(sender, arguments.slice(node.positions, arguments.length), node.children, parsed)
+      case (_, node) => parseCommand(sender, arguments.slice(node.positions, arguments.length), node.children, parsed, literals)
     }))
 
     nextNodes
