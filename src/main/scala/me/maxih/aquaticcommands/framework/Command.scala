@@ -62,6 +62,7 @@ trait Command {
 
   private def parseCommand(sender: CommandSender, arguments: Seq[String], currentNodes: Seq[CommandNode], parsed: mutable.HashMap[String, ParsedArgument]): Seq[(String, CommandNode)] = {
     val nodes = currentNodes
+      .filter(node => arguments.slice(0, node.positions).nonEmpty)
       .filter(node => node.applicable(sender, arguments.slice(0, node.positions).mkString(" ")))
       .map(node => (arguments.slice(0, node.positions).mkString(" "), node))
 
