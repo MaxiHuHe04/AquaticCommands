@@ -24,7 +24,7 @@ trait Command {
 
     try {
       val lastNodes = parseCommand(sender, args, rootNode.children, parsedArguments, literals)
-      if (!lastNodes.exists(_._2.executable)) throw new ParseException("Unknown command", lastArgumentPlaceholder)
+      if (!lastNodes.exists(_._2.executable) && !(args.isEmpty && rootNode.executable)) throw new ParseException("Unknown command", lastArgumentPlaceholder)
 
       this.execute(sender, parsedArguments.toMap, literals)
     } catch {
