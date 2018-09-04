@@ -6,7 +6,7 @@ script:
 - sbt ++$TRAVIS_SCALA_VERSION test package packageSrc spigotPlugin/assembly
 
 deploy:
-  provider: releases
+- provider: releases
   api_key:
     secure: OiSTh6hBACvWj6Ek+iU8i9J6o0cPZpB7rRzYYvDIXsQzSykoJH7YdPBOa4rSmieEEvlW7g7UA8GeJuRNqdW3VCNyz4DCk9Myd/jiKO+EzjNGGqqN+9DjzSQ9Vmzxt3f6gnR3ZSVIGRf0Kp0U/lv0HSqcre6UDKyIdig73ld4RPMdFBrGphWVIFfjP7c9AOnSq7+93cHHaAV2uEJr71F1pDkf5bK9t5nEYRdOMER1NvGAZFBdT9LAx4WNDObuDNP418hZ3MayQmeIJC0T4W/b69gPehBgYQDr7bneVtNtL7vaDKrwZaUVPXmBioIPwDLkG2JpzdRL6+CadmcOL9y0g4Caf2sTQEAgl3pdbsdcdjzxOK1xIQ8EUgg4Zhz92gMkuD9UthiO5IHc95dt5d2Tnh9ulFnKL5C4RJwF30uoAaNCoGLfS3BSb7V9FZmE8BwVEdiwVaLn8tSDjVHRTuKRhCJ8VBwbRITfnfqOHQdc1k1wjopit1ZjelmMWzxmkEhLTY6YbIlJCp2wHgqAhYZ+d6DCJTT5CBBt7dgTf/jIhRLNyOLUVYsL2owTxPzvhS4PvuMLhOs8pkWA6mLx3Msyp9UX8nfRNNJMaVQGhEYxFgbi+M+Euf+j56elUx05MQypQIC+kulQ7wS0FdVpi/AGrBT/9viXQ4B/nz8NtHSWPhg=
   skip_cleanup: true
@@ -14,6 +14,13 @@ deploy:
   file:
   - 'target/scala-2.12/aquaticcommands*.jar'
   - 'plugin/target/scala-2.12/AquaticCommands-spigot*.jar'
+  on:
+    repo: MaxiHuHe04/AquaticCommands
+    tags: true
+
+- provider: script
+  skip_cleanup: true
+  script: sbt ++$TRAVIS_SCALA_VERSION publish
   on:
     repo: MaxiHuHe04/AquaticCommands
     tags: true
